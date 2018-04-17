@@ -16,7 +16,7 @@ public class MembershipLevelController
         try
         {
             SqlConnection ClubBAISTConnection = new SqlConnection();
-            ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAISTLaptop"].ConnectionString;
+            ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAIST"].ConnectionString;
 
             SqlCommand ClubBAISTCommand = new SqlCommand();
             ClubBAISTCommand.CommandType = CommandType.StoredProcedure;
@@ -48,7 +48,7 @@ public class MembershipLevelController
         try
         {
             SqlConnection ClubBAISTConnection = new SqlConnection();
-            ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAISTLaptop"].ConnectionString;
+            ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAIST"].ConnectionString;
 
             SqlCommand ClubBAISTCommand = new SqlCommand();
             ClubBAISTCommand.CommandType = CommandType.StoredProcedure;
@@ -87,7 +87,7 @@ public class MembershipLevelController
         try
         {
             SqlConnection ClubBAISTConnection = new SqlConnection();
-            ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAISTLaptop"].ConnectionString;
+            ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAIST"].ConnectionString;
 
             SqlCommand ClubBAISTCommand = new SqlCommand();
             ClubBAISTCommand.CommandType = CommandType.StoredProcedure;
@@ -120,7 +120,7 @@ public class MembershipLevelController
         try
         {
             SqlConnection ClubBAISTConnection = new SqlConnection();
-            ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAISTLaptop"].ConnectionString;
+            ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAIST"].ConnectionString;
 
             SqlCommand ClubBAISTCommand = new SqlCommand();
             ClubBAISTCommand.CommandType = CommandType.StoredProcedure;
@@ -165,7 +165,7 @@ public class MembershipLevelController
         try
         {
             SqlConnection ClubBAISTConnection = new SqlConnection();
-            ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAISTLaptop"].ConnectionString;
+            ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAIST"].ConnectionString;
 
             SqlCommand ClubBAISTCommand = new SqlCommand();
             ClubBAISTCommand.CommandType = CommandType.StoredProcedure;

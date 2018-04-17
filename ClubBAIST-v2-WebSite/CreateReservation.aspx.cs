@@ -135,14 +135,14 @@ public partial class CreateReservation : System.Web.UI.Page
         {
             if (s.IsInAnyRoles("ADMIN"))
             {
-                
-                b = cb.CreateResevation(int.Parse(Request.QueryString["u"]), int.Parse(CourseDD.SelectedValue), DateTime.Parse(TeeTimesDD.SelectedValue), int.Parse(NumberHolesDD.SelectedValue), int.Parse(NumberCartsDD.SelectedValue), int.Parse(NumberPlayerDD.SelectedValue));
+
+                b = cb.CreateResevation(int.Parse(Request.QueryString["u"]), int.Parse(CourseDD.SelectedValue), DateTime.Parse(TeeTimesDD.SelectedValue), int.Parse(NumberHolesDD.SelectedValue), int.Parse(NumberCartsDD.SelectedValue), Player2TB.Text, Player3TB.Text, Player4TB.Text, 0);
                 Response.Redirect("Default.aspx");
             }
             else
             {
                 User u = cb.ReadUser(HttpContext.Current.User.Identity.Name);
-                b = cb.CreateResevation(u.UserID, int.Parse(CourseDD.SelectedValue), DateTime.Parse(TeeTimesDD.SelectedValue), int.Parse(NumberHolesDD.SelectedValue), int.Parse(NumberCartsDD.SelectedValue), int.Parse(NumberPlayerDD.SelectedValue));
+                b = cb.CreateResevation(u.UserID, int.Parse(CourseDD.SelectedValue), DateTime.Parse(TeeTimesDD.SelectedValue), int.Parse(NumberHolesDD.SelectedValue), int.Parse(NumberCartsDD.SelectedValue), Player2TB.Text, Player3TB.Text, Player4TB.Text, 0);
                 Response.Redirect("Default.aspx");
             }
         }

@@ -34,6 +34,6 @@ public partial class CreateCourse : System.Web.UI.Page
         pars[15] = int.Parse(Par16.SelectedValue);
         pars[16] = int.Parse(Par17.SelectedValue);
         pars[17] = int.Parse(Par18.SelectedValue);
-        bool b = cb.CreateCourse(DescriptionTB.Text, pars);
+        bool b = cb.CreateCourse(DescriptionTB.Text, pars, decimal.Parse(CourseRatingTB.Text), decimal.Parse(SlopeRatingTB.Text));
     }
 }

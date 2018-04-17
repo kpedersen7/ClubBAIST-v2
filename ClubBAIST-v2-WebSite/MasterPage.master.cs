@@ -41,6 +41,10 @@ public partial class MasterPage : System.Web.UI.MasterPage
                 SRLink2.Visible = false;
             }
         }
+        else
+        {
+            NotAdminStuff();
+        }
     }
 
     private void NotAdminStuff()

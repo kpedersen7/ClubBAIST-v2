@@ -9,7 +9,9 @@ using System.Web;
 public class Score
 {
     public int ScoreID { get; set; }
-    public int UserID { get; set; }
-    public int CourseID { get; set; }
+    public int ReservationID { get; set; }
+    public string UserEmail { get; set; }
     public int[] Scores { get; set; }
+    public int RoundTotal { get; set; }
+    public decimal HandicapDifferential { get; set; }
 }

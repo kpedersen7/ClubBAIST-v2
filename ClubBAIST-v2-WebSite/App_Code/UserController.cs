@@ -21,7 +21,7 @@ public class UserController
             string salt = MakeSalt();
 
             SqlConnection ClubBAISTConnection = new SqlConnection();
-            ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAISTLaptop"].ConnectionString;
+            ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAIST"].ConnectionString;
 
             SqlCommand ClubBAISTCommand = new SqlCommand();
             ClubBAISTCommand.CommandType = CommandType.StoredProcedure;
@@ -94,7 +94,7 @@ public class UserController
         User theUser = new User();
 
         SqlConnection ClubBAISTConnection = new SqlConnection();
-        ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAISTLaptop"].ConnectionString;
+        ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAIST"].ConnectionString;
 
         SqlCommand ClubBAISTCommand = new SqlCommand();
         ClubBAISTCommand.CommandType = CommandType.StoredProcedure;
@@ -133,7 +133,7 @@ public class UserController
         User theUser = new User();
 
         SqlConnection ClubBAISTConnection = new SqlConnection();
-        ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAISTLaptop"].ConnectionString;
+        ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAIST"].ConnectionString;
 
         SqlCommand ClubBAISTCommand = new SqlCommand();
         ClubBAISTCommand.CommandType = CommandType.StoredProcedure;
@@ -173,7 +173,7 @@ public class UserController
         try
         {
             SqlConnection ClubBAISTConnection = new SqlConnection();
-            ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAISTLaptop"].ConnectionString;
+            ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAIST"].ConnectionString;
 
             SqlCommand ClubBAISTCommand = new SqlCommand();
             ClubBAISTCommand.CommandType = CommandType.StoredProcedure;
@@ -243,7 +243,7 @@ public class UserController
             string salt = MakeSalt();
 
             SqlConnection ClubBAISTConnection = new SqlConnection();
-            ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAISTLaptop"].ConnectionString;
+            ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAIST"].ConnectionString;
 
             SqlCommand ClubBAISTCommand = new SqlCommand();
             ClubBAISTCommand.CommandType = CommandType.StoredProcedure;
@@ -323,7 +323,7 @@ public class UserController
         try
         {
             SqlConnection ClubBAISTConnection = new SqlConnection();
-            ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAISTLaptop"].ConnectionString;
+            ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAIST"].ConnectionString;
 
             SqlCommand ClubBAISTCommand = new SqlCommand();
             ClubBAISTCommand.CommandType = CommandType.StoredProcedure;
@@ -368,7 +368,7 @@ public class UserController
     public bool IsAuthenticated(string email, string password)
     {
         SqlConnection ClubBAISTConnection = new SqlConnection();
-        ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAISTLaptop"].ConnectionString;
+        ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAIST"].ConnectionString;
 
         SqlCommand ClubBAISTCommand = new SqlCommand();
         ClubBAISTCommand.CommandType = CommandType.StoredProcedure;

@@ -14,7 +14,11 @@ using System.Web;
 /// </summary>
 public class SecurityController : IPrincipal
 {
-
+    //admin
+    //Kr2WN9ExfdIEc6w1yIx7vXL0oqw=
+    //ZXlmPD8=
+    //1
+    //1
     private IIdentity _identity;
     private string[] _roles;
 

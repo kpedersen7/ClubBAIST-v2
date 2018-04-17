@@ -1,19 +1,16 @@
---DROP DATABASE ClubBAIST
---GO
---CREATE DATABASE ClubBAIST
---GO
+CREATE DATABASE ClubBAIST
+GO
 USE ClubBAIST
 GO
-
 CREATE TABLE [MembershipLevel](
 	MembershipLevelID int NOT NULL PRIMARY KEY IDENTITY(1,1),
 	Description varchar(20) NOT NULL,
 	Active int NOT NULL
 )
-
+GO
 CREATE TABLE [User](
 	UserID int NOT NULL PRIMARY KEY IDENTITY(1,1),
-	UserEmail varchar(50) NOT NULL,
+	UserEmail varchar(50) NOT NULL UNIQUE,
 	Password varchar(50) NOT NULL,
 	FirstName varchar(50) NOT NULL,
 	LastName varchar(50) NOT NULL,
@@ -22,7 +19,7 @@ CREATE TABLE [User](
 	MembershipLevelID int NOT NULL FOREIGN KEY REFERENCES MembershipLevel(MembershipLevelID),
 	Active int NOT NULL
 )
-
+GO
 CREATE TABLE [Course](
 	CourseID int NOT NULL PRIMARY KEY IDENTITY(1,1),
 	CourseName varchar(50) NOT NULL,
@@ -44,8 +41,10 @@ CREATE TABLE [Course](
 	ParHole16 int NOT NULL,
 	ParHole17 int NOT NULL,
 	ParHole18 int NOT NULL,
+	CourseRating decimal(5,2) NOT NULL,
+	SlopeRating decimal(5,2) NOT NULL,
 )
-
+GO
 CREATE TABLE [Reservation](
 	ReservationID int NOT NULL PRIMARY KEY IDENTITY(1,1),
 	UserID int NOT NULL FOREIGN KEY REFERENCES [User](UserID),
@@ -53,9 +52,12 @@ CREATE TABLE [Reservation](
 	ReservedTime DateTime NOT NULL,
 	NumberHoles int NOT NULL,
 	NumberCarts int NOT NULL,
-	NumberPlayers int NOT NULL
+	Player2 varchar(255) NULL,
+	Player3 varchar(255) NULL,
+	Player4 varchar(255) NULL,
+	IsStandingReservation int NOT NULL
 )
-
+GO
 CREATE TABLE [StandingReservation](
 	StandingReservationID int NOT NULL PRIMARY KEY IDENTITY(1,1),
 	UserID int NOT NULL FOREIGN KEY REFERENCES [User](UserID),
@@ -70,11 +72,11 @@ CREATE TABLE [StandingReservation](
 	Approved int NOT NULL,
 	Active int NOT NULL,
 )
-
+GO
 CREATE TABLE [Score](
 	ScoreID int NOT NULL PRIMARY KEY IDENTITY(1,1),
-	UserID int NOT NULL FOREIGN KEY REFERENCES [User](UserID),
-	CourseID int NOT NULL FOREIGN KEY REFERENCES [Course](CourseID),
+	ReservationID int NOT NULL FOREIGN KEY REFERENCES [Reservation](ReservationID),
+	UserEmail varchar(50) NOT NULL,
 	ScoreHole1 int NULL,
 	ScoreHole2 int NULL,
 	ScoreHole3 int NULL,
@@ -93,6 +95,8 @@ CREATE TABLE [Score](
 	ScoreHole16 int NULL,
 	ScoreHole17 int NULL,
 	ScoreHole18 int NULL,
+	RoundTotal int NOT NULL,
+	HandicapDifferential decimal(4,2) NOT NULL,
 )
 GO
 -----------------USER PROCEDURES
@@ -105,7 +109,7 @@ IF @Password IS NULL
 	RAISERROR('InsertUser - Required Parameter : @Password',16,1)
 ELSE
 	BEGIN
-		INSERT INTO [User](UserEmail, Password, FirstName, LastName, Phone, Salt, MembershipLevelID) VALUES (@UserEmail, @Password, @FirstName, @LastName, @Phone, @Salt, @MembershipLevelID)
+		INSERT INTO [User](UserEmail, Password, FirstName, LastName, Phone, Salt, MembershipLevelID, Active) VALUES (@UserEmail, @Password, @FirstName, @LastName, @Phone, @Salt, @MembershipLevelID, 1)
 		IF @@ERROR = 0
 			SET @ReturnCode = 0
 		ELSE
@@ -126,6 +130,22 @@ ELSE
 			SET @ReturnCode = 0
 		ELSE
 			RAISERROR('SelectUser - Select Error from Users Table', 16,1)
+	END
+RETURN @ReturnCode
+GO
+
+CREATE PROCEDURE SelectUserByID(@UserID int) AS
+DECLARE @ReturnCode INT
+SET @ReturnCode = 1
+IF @UserID IS NULL
+	RAISERROR('SelectUserByID - Required Parameter : @UserID',16,1)
+ELSE
+	BEGIN
+		SELECT * FROM [User] WHERE UserID = @UserID
+		IF @@ERROR = 0
+			SET @ReturnCode = 0
+		ELSE
+			RAISERROR('SelectUserByID - Select Error from Users Table', 16,1)
 	END
 RETURN @ReturnCode
 GO
@@ -193,7 +213,7 @@ GO
 
 
 ---------------RESERVATION PROCEDURES
-CREATE PROCEDURE InsertReservation(@UserID int, @CourseId int, @ReservedTime DateTime, @NumberHoles int, @NumberCarts int, @NumberPlayers int) as
+CREATE PROCEDURE InsertReservation(@UserID int, @CourseId int, @ReservedTime DateTime, @NumberHoles int, @NumberCarts int, @Player2 varchar(255), @Player3 varchar(255),@Player4 varchar(255), @IsStandingReservation int) as
 DECLARE @ReturnCode INT
 SET @ReturnCode = 1
 IF @UserID IS NULL
@@ -206,11 +226,10 @@ IF @NumberHoles IS NULL
 	RAISERROR('InsertReservation - Required Parameter : @NumberHoles',16,1)
 IF @NumberCarts IS NULL
 	RAISERROR('InsertReservation - Required Parameter : @NumberCarts',16,1)
-IF @NumberPlayers IS NULL
-	RAISERROR('InsertReservation - Required Parameter : @NumberPlayers',16,1)
 ELSE
 	BEGIN
-		INSERT INTO [Reservation](UserID,CourseID, ReservedTime, NumberHoles, NumberCarts, NumberPlayers) VALUES (@UserID, @CourseId,@ReservedTime,@NumberHoles,@NumberCarts,@NumberPlayers)
+		INSERT INTO [Reservation](UserID,CourseID, ReservedTime, NumberHoles, NumberCarts, Player2, Player3, Player4, IsStandingReservation)
+		VALUES (@UserID, @CourseId,@ReservedTime,@NumberHoles,@NumberCarts,@Player2, @Player3, @Player4, @IsStandingReservation)
 		IF @@ERROR = 0
 			SET @ReturnCode = 0
 		ELSE
@@ -235,14 +254,14 @@ ELSE
 RETURN @ReturnCode
 GO
 
-CREATE PROCEDURE SelectReservationBatchForMember(@UserID int) AS
+CREATE PROCEDURE SelectReservationBatchForMember(@UserID int, @UserEmail varchar(255)) AS
 DECLARE @ReturnCode INT
 SET @ReturnCode = 1
 IF @UserID IS NULL
 	RAISERROR('GetReservationBatchForMember - Required Parameter : @UserEmail',16,1)
 ELSE
 	BEGIN
-		SELECT * FROM [Reservation] WHERE UserId = @UserID AND ReservedTime > GETDATE()
+		SELECT * FROM [Reservation] WHERE UserId = @UserID OR Player2 = @UserEmail OR Player3 = @UserEmail OR Player4 = @UserEmail
 		IF @@ERROR = 0
 			SET @ReturnCode = 0
 		ELSE
@@ -271,7 +290,7 @@ ELSE
 RETURN @ReturnCode
 GO
 
-CREATE PROCEDURE UpdateReservation(@ReservationID int, @UserID int, @CourseId int, @ReservedTime DateTime, @NumberHoles int, @NumberCarts int, @NumberPlayers int) AS
+CREATE PROCEDURE UpdateReservation(@ReservationID int, @UserID int, @CourseId int, @ReservedTime DateTime, @NumberHoles int, @NumberCarts int,  @Player2 varchar(255), @Player3 varchar(255),@Player4 varchar(255), @IsStandingReservation int) AS
 DECLARE @ReturnCode INT
 SET @ReturnCode = 1
 IF @ReservationID IS NULL
@@ -284,7 +303,10 @@ ELSE
 		, ReservedTime = @ReservedTime
 		, NumberHoles = @NumberHoles
 		, NumberCarts = @NumberCarts
-		, NumberPlayers = @NumberPlayers
+		, Player2 = @Player2
+		, Player3 = @Player3
+		, Player4 = @Player4
+		, IsStandingReservation = @IsStandingReservation
 		WHERE ReservationID = @ReservationID
 		IF @@ERROR = 0
 			SET @ReturnCode = 0
@@ -407,9 +429,8 @@ ELSE
 RETURN @ReturnCode
 GO
 
-
 -----------------------------COURSE Procedures
-CREATE PROCEDURE InsertCourse(@CourseName varchar(50), @Par1 int,@Par2 int,@Par3 int,@Par4 int,@Par5 int,@Par6 int,@Par7 int,@Par8 int,@Par9 int,@Par10 int,@Par11 int,@Par12 int,@Par13 int,@Par14 int,@Par15 int,@Par16 int,@Par17 int,@Par18 int) as
+CREATE PROCEDURE InsertCourse(@CourseName varchar(50), @Par1 int,@Par2 int,@Par3 int,@Par4 int,@Par5 int,@Par6 int,@Par7 int,@Par8 int,@Par9 int,@Par10 int,@Par11 int,@Par12 int,@Par13 int,@Par14 int,@Par15 int,@Par16 int,@Par17 int,@Par18 int, @CourseRating decimal(5,2), @SlopeRating decimal(5,2)) as
 DECLARE @ReturnCode INT
 SET @ReturnCode = 1
 IF @CourseName IS NULL
@@ -417,43 +438,47 @@ IF @CourseName IS NULL
 IF @Par1 IS NULL
 	RAISERROR('InsertCourse - Required Parameter : @Par1',16,1)
 IF @Par2 IS NULL
-	RAISERROR('InsertCourse - Required Parameter : @Par1',16,1)
+	RAISERROR('InsertCourse - Required Parameter : @Par2',16,1)
 IF @Par3 IS NULL
-	RAISERROR('InsertCourse - Required Parameter : @Par1',16,1)
+	RAISERROR('InsertCourse - Required Parameter : @Par3',16,1)
 IF @Par4 IS NULL
-	RAISERROR('InsertCourse - Required Parameter : @Par1',16,1)
+	RAISERROR('InsertCourse - Required Parameter : @Par4',16,1)
 IF @Par5 IS NULL
-	RAISERROR('InsertCourse - Required Parameter : @Par1',16,1)
+	RAISERROR('InsertCourse - Required Parameter : @Par5',16,1)
 IF @Par6 IS NULL
-	RAISERROR('InsertCourse - Required Parameter : @Par1',16,1)
+	RAISERROR('InsertCourse - Required Parameter : @Par6',16,1)
 IF @Par7 IS NULL
-	RAISERROR('InsertCourse - Required Parameter : @Par1',16,1)
+	RAISERROR('InsertCourse - Required Parameter : @Par7',16,1)
 IF @Par8 IS NULL
-	RAISERROR('InsertCourse - Required Parameter : @Par1',16,1)
+	RAISERROR('InsertCourse - Required Parameter : @Par8',16,1)
 IF @Par9 IS NULL
-	RAISERROR('InsertCourse - Required Parameter : @Par1',16,1)
+	RAISERROR('InsertCourse - Required Parameter : @Par9',16,1)
 IF @Par10 IS NULL
-	RAISERROR('InsertCourse - Required Parameter : @Par1',16,1)
+	RAISERROR('InsertCourse - Required Parameter : @Par10',16,1)
 IF @Par11 IS NULL
-	RAISERROR('InsertCourse - Required Parameter : @Par1',16,1)
+	RAISERROR('InsertCourse - Required Parameter : @Par11',16,1)
 IF @Par12 IS NULL
-	RAISERROR('InsertCourse - Required Parameter : @Par1',16,1)
+	RAISERROR('InsertCourse - Required Parameter : @Par12',16,1)
 IF @Par13 IS NULL
-	RAISERROR('InsertCourse - Required Parameter : @Par1',16,1)
+	RAISERROR('InsertCourse - Required Parameter : @Par13',16,1)
 IF @Par14 IS NULL
-	RAISERROR('InsertCourse - Required Parameter : @Par1',16,1)
+	RAISERROR('InsertCourse - Required Parameter : @Par14',16,1)
 IF @Par15 IS NULL
-	RAISERROR('InsertCourse - Required Parameter : @Par1',16,1)
+	RAISERROR('InsertCourse - Required Parameter : @Par15',16,1)
 IF @Par16 IS NULL
-	RAISERROR('InsertCourse - Required Parameter : @Par1',16,1)
+	RAISERROR('InsertCourse - Required Parameter : @Par16',16,1)
 IF @Par17 IS NULL
-	RAISERROR('InsertCourse - Required Parameter : @Par1',16,1)
+	RAISERROR('InsertCourse - Required Parameter : @Par17',16,1)
 IF @Par18 IS NULL
-	RAISERROR('InsertCourse - Required Parameter : @Par1',16,1)
+	RAISERROR('InsertCourse - Required Parameter : @Par18',16,1)
+IF @CourseRating IS NULL
+	RAISERROR('InsertCourse - Required Parameter : @CourseRating',16,1)
+IF @SlopeRating IS NULL
+	RAISERROR('InsertCourse - Required Parameter : @SlopeRating',16,1)
 ELSE
 	BEGIN
-		INSERT INTO [Course](CourseName, ParHole1,ParHole2,ParHole3,ParHole4,ParHole5,ParHole6,ParHole7,ParHole8,ParHole9,ParHole10,ParHole11,ParHole12,ParHole13,ParHole14,ParHole15,ParHole16,ParHole17,ParHole18)
-		VALUES (@CourseName, @Par1,@Par2,@Par3,@Par4,@Par5,@Par6,@Par7,@Par8,@Par9,@Par10,@Par11,@Par12,@Par13,@Par14,@Par15,@Par16,@Par17,@Par18)
+		INSERT INTO [Course](CourseName, ParHole1,ParHole2,ParHole3,ParHole4,ParHole5,ParHole6,ParHole7,ParHole8,ParHole9,ParHole10,ParHole11,ParHole12,ParHole13,ParHole14,ParHole15,ParHole16,ParHole17,ParHole18, CourseRating, SlopeRating)
+		VALUES (@CourseName, @Par1,@Par2,@Par3,@Par4,@Par5,@Par6,@Par7,@Par8,@Par9,@Par10,@Par11,@Par12,@Par13,@Par14,@Par15,@Par16,@Par17,@Par18, @CourseRating, @SlopeRating)
 		IF @@ERROR = 0
 			SET @ReturnCode = 0
 		ELSE
@@ -478,7 +503,20 @@ ELSE
 RETURN @ReturnCode
 GO
 
-CREATE PROCEDURE UpdateCourse(@CourseID int, @CourseName varchar(50), @Par1 int,@Par2 int,@Par3 int,@Par4 int,@Par5 int,@Par6 int,@Par7 int,@Par8 int,@Par9 int,@Par10 int,@Par11 int,@Par12 int,@Par13 int,@Par14 int,@Par15 int,@Par16 int,@Par17 int,@Par18 int) as
+CREATE PROCEDURE SelectAllCourses AS
+DECLARE @ReturnCode INT
+SET @ReturnCode = 1
+BEGIN
+	SELECT * FROM [Course]
+	IF @@ERROR = 0
+		SET @ReturnCode = 0
+	ELSE
+		RAISERROR('SelectCourse - Select Error at Course Table', 16,1)
+END
+RETURN @ReturnCode
+GO
+
+CREATE PROCEDURE UpdateCourse(@CourseID int, @CourseName varchar(50), @Par1 int,@Par2 int,@Par3 int,@Par4 int,@Par5 int,@Par6 int,@Par7 int,@Par8 int,@Par9 int,@Par10 int,@Par11 int,@Par12 int,@Par13 int,@Par14 int,@Par15 int,@Par16 int,@Par17 int,@Par18 int, @CourseRating decimal(5,2), @SlopeRating decimal(5,2)) as
 DECLARE @ReturnCode INT
 SET @ReturnCode = 1
 IF @CourseID IS NULL
@@ -521,6 +559,10 @@ IF @Par17 IS NULL
 	RAISERROR('UpdateCourse - Required Parameter : @Par17',16,1)
 IF @Par18 IS NULL
 	RAISERROR('UpdateCourse - Required Parameter : @Par18',16,1)
+IF @CourseRating IS NULL
+	RAISERROR('UpdateCourse - Required Parameter : @CourseRating',16,1)
+IF @SlopeRating IS NULL
+	RAISERROR('UpdateCourse - Required Parameter : @SlopeRating',16,1)
 ELSE
 	BEGIN
 		UPDATE [Course]
@@ -543,6 +585,9 @@ ELSE
 		,ParHole16 = @Par16
 		,ParHole17 = @Par17
 		,ParHole18 = @Par18
+		,CourseRating = @CourseRating
+		,SlopeRating = @SlopeRating
+		WHERE CourseID = @CourseID
 		IF @@ERROR = 0
 			SET @ReturnCode = 0
 		ELSE
@@ -552,7 +597,7 @@ RETURN @ReturnCode
 GO
 
 ---------------------------MEMBERSHIP LEVEL PROCEDURES
-ALTER PROCEDURE InsertMembershipLevel(@Description varchar(50)) AS
+CREATE PROCEDURE InsertMembershipLevel(@Description varchar(50)) AS
 DECLARE @ReturnCode INT
 SET @ReturnCode = 1
 IF @Description IS NULL
@@ -631,19 +676,18 @@ ELSE
 RETURN @ReturnCode
 GO
 
-
 ----------------------SCORE PROCEDURES
-CREATE PROCEDURE InsertScore(@UserID int, @CourseID int, @Score1 int,@Score2 int,@Score3 int,@Score4 int,@Score5 int,@Score6 int,@Score7 int,@Score8 int,@Score9 int,@Score10 int,@Score11 int,@Score12 int,@Score13 int,@Score14 int,@Score15 int,@Score16 int,@Score17 int,@Score18 int) as
+CREATE PROCEDURE InsertScore(@ReservationID int, @UserEmail varchar(255) ,@Score1 int,@Score2 int,@Score3 int,@Score4 int,@Score5 int,@Score6 int,@Score7 int,@Score8 int,@Score9 int,@Score10 int,@Score11 int,@Score12 int,@Score13 int,@Score14 int,@Score15 int,@Score16 int,@Score17 int,@Score18 int, @RoundTotal int, @HandicapDifferential decimal(4,2)) as
 DECLARE @ReturnCode INT
 SET @ReturnCode = 1
-IF @UserID IS NULL
-	RAISERROR('InsertScore - Required Parameter : @UserID',16,1)
-IF @CourseID IS NULL
-	RAISERROR('InsertScore - Required Parameter : @CourseID',16,1)
+IF @ReservationID IS NULL
+	RAISERROR('InsertScore - Required Parameter : @ReservationID',16,1)
+IF @UserEmail IS NULL
+	RAISERROR('InsertScore - Required Parameter : @UserEmail',16,1)
 ELSE
 	BEGIN
-		INSERT INTO [Score](UserID, CourseID, ScoreHole1,ScoreHole2,ScoreHole3,ScoreHole4,ScoreHole5,ScoreHole6,ScoreHole7,ScoreHole8,ScoreHole9,ScoreHole10,ScoreHole11,ScoreHole12,ScoreHole13,ScoreHole14,ScoreHole15,ScoreHole16,ScoreHole17,ScoreHole18)
-		VALUES (@UserID, @CourseID,  @Score1 ,@Score2 ,@Score3 ,@Score4 ,@Score5 ,@Score6 ,@Score7 ,@Score8 ,@Score9 ,@Score10 ,@Score11 ,@Score12 ,@Score13 ,@Score14 ,@Score15 ,@Score16 ,@Score17 ,@Score18)
+		INSERT INTO [Score](ReservationID, UserEmail, ScoreHole1,ScoreHole2,ScoreHole3,ScoreHole4,ScoreHole5,ScoreHole6,ScoreHole7,ScoreHole8,ScoreHole9,ScoreHole10,ScoreHole11,ScoreHole12,ScoreHole13,ScoreHole14,ScoreHole15,ScoreHole16,ScoreHole17,ScoreHole18, RoundTotal, HandicapDifferential)
+		VALUES (@ReservationID, @UserEmail,@Score1 ,@Score2 ,@Score3 ,@Score4 ,@Score5 ,@Score6 ,@Score7 ,@Score8 ,@Score9 ,@Score10 ,@Score11 ,@Score12 ,@Score13 ,@Score14 ,@Score15 ,@Score16 ,@Score17 ,@Score18, @RoundTotal, @HandicapDifferential)
 		IF @@ERROR = 0
 			SET @ReturnCode = 0
 		ELSE
@@ -652,14 +696,15 @@ ELSE
 RETURN @ReturnCode
 GO
 
-CREATE PROCEDURE SelectScores(@UserID int) AS
+CREATE PROCEDURE SelectScores(@UserEmail varchar(255)) AS
 DECLARE @ReturnCode INT
 SET @ReturnCode = 1
-IF @UserID IS NULL
-	RAISERROR('SelectScores - Required Parameter : @UserID',16,1)
+IF @UserEmail IS NULL
+	RAISERROR('SelectScores - Required Parameter : @UserEmail',16,1)
 ELSE
 	BEGIN
-		SELECT * FROM [Score] Where UserID = @UserID
+		SELECT * FROM [Score]
+		WHERE UserEmail = @UserEmail
 		IF @@ERROR = 0
 			SET @ReturnCode = 0
 		ELSE
@@ -667,3 +712,71 @@ ELSE
 	END
 RETURN @ReturnCode
 GO
+
+CREATE PROCEDURE SelectScoresForReservation(@ReservationID int) AS
+DECLARE @ReturnCode INT
+SET @ReturnCode = 1
+IF @ReservationID IS NULL
+	RAISERROR('SelectScores - Required Parameter : @ReservationID',16,1)
+ELSE
+	BEGIN
+		SELECT * FROM [Score] 
+		WHERE ReservationID = @ReservationID
+		IF @@ERROR = 0
+			SET @ReturnCode = 0
+		ELSE
+			RAISERROR('SelectScoresForReservation - Select Error at Score Table', 16,1)
+	END
+RETURN @ReturnCode
+GO
+
+CREATE PROCEDURE SelectAllScores AS
+DECLARE @ReturnCode INT
+SET @ReturnCode = 1
+BEGIN
+	SELECT * FROM [Score]
+	IF @@ERROR = 0
+		SET @ReturnCode = 0
+	ELSE
+		RAISERROR('SelectAllScores - Select Error at Score Table', 16,1)
+END
+RETURN @ReturnCode
+GO
+--------------------------TEST DATA-----------------------------------
+INSERT INTO [MembershipLevel](Description, Active) VALUES ('ADMIN', 1)
+INSERT INTO [MembershipLevel](Description, Active) VALUES ('Gold', 1)
+INSERT INTO [MembershipLevel](Description, Active) VALUES ('Silver', 1)
+INSERT INTO [MembershipLevel](Description, Active) VALUES ('Bronze', 1)
+GO
+INSERT INTO [Course](CourseName, ParHole1,ParHole2,ParHole3,ParHole4,ParHole5,ParHole6,ParHole7,ParHole8,ParHole9,ParHole10,ParHole11,ParHole12,ParHole13,ParHole14,ParHole15,ParHole16,ParHole17,ParHole18,CourseRating, SlopeRating)
+VALUES('Sweaty Pines', 3,4,5,4,3,4,5,4,3,4,5,5,4,3,4,5,3,3, 70, 128)
+GO
+INSERT INTO [User](UserEmail, Password,FirstName, LastName,Phone, Salt, MembershipLevelID, Active)
+VALUES('admin', 'Kr2WN9ExfdIEc6w1yIx7vXL0oqw=', 'Admin', 'Bro', '1111111111', 'ZXlmPD8=', 1, 1)
+INSERT INTO [User](UserEmail, Password, FirstName,LastName, Phone, Salt, MembershipLevelID, Active)
+VALUES('jeff@goldblum.com', '/lnDs0CJaBEZ6mqtWFCgeFZjZu0=', 'Jeff','Goldblum','7808008000','2sqCAYA=', 2, 1)
+INSERT INTO [User](UserEmail, Password, FirstName,LastName, Phone, Salt, MembershipLevelID, Active)
+VALUES('sarah@silverman.com', 'MTXrHPsJnwBzUXTMDxZIoshJK+Y=', 'Sarah','Silverman','7807007000','HWQRaog==', 3, 1)
+GO
+INSERT INTO [Reservation](UserID, CourseID, ReservedTime, NumberHoles,NumberCarts,Player2,Player3,Player4,IsStandingReservation)
+VALUES(2,1,'2018-04-20 08:00:00.000',1,2,'sarah@silverman.com','','',0)
+INSERT INTO [Reservation](UserID, CourseID, ReservedTime, NumberHoles,NumberCarts,Player2,Player3,Player4,IsStandingReservation)
+VALUES(2,1,'2018-04-10 09:00:00.000',2,1,'','','',0)
+INSERT INTO [Reservation](UserID, CourseID, ReservedTime, NumberHoles,NumberCarts,Player2,Player3,Player4,IsStandingReservation)
+VALUES(2,1,'2018-04-11 10:00:00.000',3,2,'sarah@silverman.com','','',0)
+INSERT INTO [Reservation](UserID, CourseID, ReservedTime, NumberHoles,NumberCarts,Player2,Player3,Player4,IsStandingReservation)
+VALUES(2,1,'2018-04-12 11:00:00.000',2,1,'','','',0)
+INSERT INTO [Reservation](UserID, CourseID, ReservedTime, NumberHoles,NumberCarts,Player2,Player3,Player4,IsStandingReservation)
+VALUES(2,1,'2018-04-14 12:00:00.000',1,2,'sarah@silverman.com','','',0)
+INSERT INTO [Reservation](UserID, CourseID, ReservedTime, NumberHoles,NumberCarts,Player2,Player3,Player4,IsStandingReservation)
+VALUES(3,1,'2018-04-15 08:00:00.000',1,2,'jeff@goldblum.com','','',0)
+INSERT INTO [Reservation](UserID, CourseID, ReservedTime, NumberHoles,NumberCarts,Player2,Player3,Player4,IsStandingReservation)
+VALUES(3,1,'2018-04-22 09:00:00.000',2,1,'','','',0)
+INSERT INTO [Reservation](UserID, CourseID, ReservedTime, NumberHoles,NumberCarts,Player2,Player3,Player4,IsStandingReservation)
+VALUES(3,1,'2018-04-21 10:00:00.000',3,2,'jeff@goldblum.com','','',0)
+INSERT INTO [Reservation](UserID, CourseID, ReservedTime, NumberHoles,NumberCarts,Player2,Player3,Player4,IsStandingReservation)
+VALUES(3,1,'2018-04-09 11:00:00.000',2,1,'','','',0)
+INSERT INTO [Reservation](UserID, CourseID, ReservedTime, NumberHoles,NumberCarts,Player2,Player3,Player4,IsStandingReservation)
+VALUES(3,1,'2018-04-08 12:00:00.000',1,2,'jeff@goldblum.com','','',0)
+
+------------------------/TEST DATA------------------------------------

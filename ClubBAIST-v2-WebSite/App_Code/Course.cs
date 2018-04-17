@@ -11,4 +11,6 @@ public class Course
     public int CourseID { get; set; }
     public string CourseName { get; set; }
     public int[] Pars { get; set; }
+    public decimal SlopeRating { get; set; }
+    public decimal CourseRating { get; set; }
 }

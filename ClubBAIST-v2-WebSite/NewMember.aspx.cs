@@ -32,11 +32,10 @@ public partial class NewMember : System.Web.UI.Page
     protected void SubmitButton_Click(object sender, EventArgs e)
     {
         ClubBAIST cb = new ClubBAIST();
-        Response.Write(MembershipLevelDD.SelectedValue);
-        //bool b = cb.CreateUser(FirstNameTB.Text, LastNameTB.Text, PhoneTB.Text, EmailTB.Text, PasswordTB.Text, int.Parse(MembershipLevelDD.SelectedValue));
-        //if (b)
-        //{
-        //    //User feedback
-        //}
+        bool b = cb.CreateUser(FirstNameTB.Text, LastNameTB.Text, PhoneTB.Text, EmailTB.Text, PasswordTB.Text, int.Parse(MembershipLevelDD.SelectedValue));
+        if (b)
+        {
+            //User feedback
+        }
     }
 }

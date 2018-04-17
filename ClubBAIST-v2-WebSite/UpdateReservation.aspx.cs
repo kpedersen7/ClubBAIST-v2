@@ -9,6 +9,10 @@ public partial class UpdateReservation : System.Web.UI.Page
 {
     protected void Page_Load(object sender, EventArgs e)
     {
+        if (Request.QueryString["r"] == null)
+        {
+            Response.Redirect("ViewReservations.aspx");
+        }
         if (!Page.IsPostBack)
         {
             FillCourseDropDown();
@@ -37,9 +41,11 @@ public partial class UpdateReservation : System.Web.UI.Page
         Reservation r = cb.ReadReservation(int.Parse(Request.QueryString["r"]));
         Calendar.SelectedDate = r.ReservedTime.Date;
         NumberHolesDD.SelectedValue = r.NumberHoles.ToString();
-        NumberPlayerDD.SelectedValue = r.NumberPlayers.ToString();
         NumberCartsDD.SelectedValue = r.NumberCarts.ToString();
         CourseDD.SelectedValue = r.CourseID.ToString();
+        Player2TB.Text = r.Player2;
+        Player3TB.Text = r.Player3;
+        Player4TB.Text = r.Player4;
     }
 
     protected void DaySelected(object sender, EventArgs e)
@@ -103,7 +109,7 @@ public partial class UpdateReservation : System.Web.UI.Page
     {
         ClubBAIST cb = new ClubBAIST();
         Reservation r = cb.ReadReservation(int.Parse(Request.QueryString["r"]));
-        bool b = cb.UpdateReservation(int.Parse(Request.QueryString["r"]), r.UserID, int.Parse(CourseDD.SelectedValue),DateTime.Parse(TeeTimesDD.SelectedValue), int.Parse(NumberHolesDD.SelectedValue), int.Parse(NumberCartsDD.SelectedValue), int.Parse(NumberPlayerDD.SelectedValue));
+        bool b = cb.UpdateReservation(int.Parse(Request.QueryString["r"]), r.UserID, int.Parse(CourseDD.SelectedValue),DateTime.Parse(TeeTimesDD.SelectedValue), int.Parse(NumberHolesDD.SelectedValue), int.Parse(NumberCartsDD.SelectedValue), Player2TB.Text, Player3TB.Text, Player4TB.Text);
         if (!b)
         {
             //Response.Write("Something went wrong.");

@@ -14,5 +14,8 @@ public class Reservation
     public DateTime ReservedTime { get; set; }
     public int NumberHoles { get; set; }
     public int NumberCarts { get; set; }
-    public int NumberPlayers { get; set; }
+    public string Player2 { get; set; }
+    public string Player3 { get; set; }
+    public string Player4 { get; set; }
+    public int IsStandingReservation { get; set; }
 }

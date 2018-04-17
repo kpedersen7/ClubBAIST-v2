@@ -11,12 +11,12 @@ using System.Web;
 /// </summary>
 public class CourseController 
 {
-    public bool InsertCourse(string courseName, int[] pars)
+    public bool InsertCourse(string courseName, int[] pars, decimal courseRating, decimal slopeRating)
     {
         try
         {
             SqlConnection ClubBAISTConnection = new SqlConnection();
-            ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAISTLaptop"].ConnectionString;
+            ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAIST"].ConnectionString;
 
             SqlCommand ClubBAISTCommand = new SqlCommand();
             ClubBAISTCommand.CommandType = CommandType.StoredProcedure;
@@ -40,6 +40,20 @@ public class CourseController
                 ClubBAISTCommand.Parameters.Add(parameter);
             }
 
+            parameter = new SqlParameter();
+            parameter.ParameterName = "@CourseRating";
+            parameter.SqlDbType = SqlDbType.Decimal;
+            parameter.Value = courseRating;
+            parameter.Direction = ParameterDirection.Input;
+            ClubBAISTCommand.Parameters.Add(parameter);
+
+            parameter = new SqlParameter();
+            parameter.ParameterName = "@SlopeRating";
+            parameter.SqlDbType = SqlDbType.Decimal;
+            parameter.Value = slopeRating;
+            parameter.Direction = ParameterDirection.Input;
+            ClubBAISTCommand.Parameters.Add(parameter);
+
             ClubBAISTConnection.Open();
             SqlDataReader dr;
             dr = ClubBAISTCommand.ExecuteReader();
@@ -58,7 +72,7 @@ public class CourseController
         try
         {
             SqlConnection ClubBAISTConnection = new SqlConnection();
-            ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAISTLaptop"].ConnectionString;
+            ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAIST"].ConnectionString;
 
             SqlCommand ClubBAISTCommand = new SqlCommand();
             ClubBAISTCommand.CommandType = CommandType.StoredProcedure;
@@ -78,7 +92,9 @@ public class CourseController
             dr.Read();
             c.CourseID = int.Parse(dr["CourseID"].ToString());
             c.CourseName = dr["CourseName"].ToString();
-            for(int i = 1; i < 18; i++)
+            c.CourseRating = decimal.Parse(dr["CourseRating"].ToString());
+            c.SlopeRating = decimal.Parse(dr["SlopeRating"].ToString());
+            for (int i = 1; i < 18; i++)
             {
                 c.Pars[i-1] = int.Parse(dr["ParHole" + i.ToString()].ToString());
             }
@@ -97,7 +113,7 @@ public class CourseController
         try
         {
             SqlConnection ClubBAISTConnection = new SqlConnection();
-            ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAISTLaptop"].ConnectionString;
+            ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAIST"].ConnectionString;
 
             SqlCommand ClubBAISTCommand = new SqlCommand();
             ClubBAISTCommand.CommandType = CommandType.StoredProcedure;
@@ -112,6 +128,8 @@ public class CourseController
                 Course c = new Course();
                 c.CourseID = int.Parse(dr["CourseID"].ToString());
                 c.CourseName = dr["CourseName"].ToString();
+                c.CourseRating = decimal.Parse(dr["CourseRating"].ToString());
+                c.SlopeRating = decimal.Parse(dr["SlopeRating"].ToString());
                 c.Pars = new int[18];
                 for (int i = 0; i < 17; i++)
                 {
@@ -128,12 +146,12 @@ public class CourseController
         return courses;
     }
 
-    public bool UpdateCourse(int courseID, string courseName, int[] pars)
+    public bool UpdateCourse(int courseID, string courseName, int[] pars, decimal courseRating, decimal slopeRating)
     {
         try
         {
             SqlConnection ClubBAISTConnection = new SqlConnection();
-            ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAISTLaptop"].ConnectionString;
+            ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAIST"].ConnectionString;
 
             SqlCommand ClubBAISTCommand = new SqlCommand();
             ClubBAISTCommand.CommandType = CommandType.StoredProcedure;
@@ -165,6 +183,20 @@ public class CourseController
                 ClubBAISTCommand.Parameters.Add(parameter);
                 j++;
             }
+
+            parameter = new SqlParameter();
+            parameter.ParameterName = "@CourseRating";
+            parameter.SqlDbType = SqlDbType.Decimal;
+            parameter.Value = courseRating;
+            parameter.Direction = ParameterDirection.Input;
+            ClubBAISTCommand.Parameters.Add(parameter);
+
+            parameter = new SqlParameter();
+            parameter.ParameterName = "@SlopeRating";
+            parameter.SqlDbType = SqlDbType.Decimal;
+            parameter.Value = slopeRating;
+            parameter.Direction = ParameterDirection.Input;
+            ClubBAISTCommand.Parameters.Add(parameter);
 
             ClubBAISTConnection.Open();
             SqlDataReader dr;

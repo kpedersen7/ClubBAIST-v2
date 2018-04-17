@@ -74,12 +74,12 @@ public class ClubBAIST
     #endregion
 
     #region RESERVATION METHODS
-    public bool CreateResevation(int userID, int courseID, DateTime reservedTime, int numberHoles, int numberCarts, int numberPlayers)
+    public bool CreateResevation(int userID, int courseID, DateTime reservedTime, int numberHoles, int numberCarts, string player2, string player3, string player4, int isStandingReservation)
     {
         try
         {
             ReservationController reservations = new ReservationController();
-            bool b = reservations.InsertReservation(userID, courseID, reservedTime, numberHoles, numberCarts, numberPlayers);
+            bool b = reservations.InsertReservation(userID, courseID, reservedTime, numberHoles, numberCarts, player2, player3, player4, isStandingReservation);
             return b;
         }
         catch
@@ -95,10 +95,10 @@ public class ClubBAIST
         return r;
     }
 
-    public List<Reservation> ReadReservationBatchForMember(int userID)
+    public List<Reservation> ReadReservationBatchForMember(int userID, string email)
     {
         ReservationController reservations = new ReservationController();
-        List<Reservation> r = reservations.SelectReservationBatchForMember(userID);
+        List<Reservation> r = reservations.SelectReservationBatchForMember(userID, email);
         return r;
     }
 
@@ -109,12 +109,12 @@ public class ClubBAIST
         return r;
     }
 
-    public bool UpdateReservation(int reservationID, int userID, int courseID, DateTime reservedTime, int numberHoles, int numberCarts, int numberPlayers)
+    public bool UpdateReservation(int reservationID, int userID, int courseID, DateTime reservedTime, int numberHoles, int numberCarts, string player2, string player3, string player4)
     {
         try
         {
             ReservationController reservations = new ReservationController();
-            bool b = reservations.UpdateReservation(reservationID, userID,courseID,reservedTime,numberHoles,numberCarts,numberPlayers);
+            bool b = reservations.UpdateReservation(reservationID, userID,courseID,reservedTime,numberHoles,numberCarts, player2, player3, player4);
             return b;
         }
         catch
@@ -255,12 +255,12 @@ public class ClubBAIST
     #endregion
 
     #region COURSE METHODS
-    public bool CreateCourse(string courseName, int[] pars)
+    public bool CreateCourse(string courseName, int[] pars, decimal courseRating, decimal slopeRating)
     {
         try
         {
             CourseController courses = new CourseController();
-            bool b = courses.InsertCourse(courseName,pars);
+            bool b = courses.InsertCourse(courseName,pars, courseRating,slopeRating);
             return b;
         }
         catch
@@ -283,12 +283,12 @@ public class ClubBAIST
         return cs;
     }
 
-    public bool UpdateCourse(int courseID, string courseName, int[] pars)
+    public bool UpdateCourse(int courseID, string courseName, int[] pars, decimal courseRating, decimal slopeRating)
     {
         try
         {
             CourseController courses = new CourseController();
-            bool b = courses.UpdateCourse(courseID, courseName, pars);
+            bool b = courses.UpdateCourse(courseID, courseName, pars, courseRating,slopeRating);
             return b;
         }
         catch
@@ -299,12 +299,15 @@ public class ClubBAIST
     #endregion
 
     #region SCORE METHODS
-    public bool CreateScore(int userID, int courseID, int[] theScores)
+    public bool CreateScore(int reservationID, string email,int[] theScores, int total)
     {
         try
         {
             ScoreController scores = new ScoreController();
-            bool b = scores.InsertScore(userID,courseID,theScores);
+            Reservation r = ReadReservation(reservationID);
+            Course c = ReadCourse(r.CourseID);
+            decimal handicapDifferential = (decimal.Parse(total.ToString()) - decimal.Parse(c.CourseRating.ToString())) * (113 / decimal.Parse(c.SlopeRating.ToString()));
+            bool b = scores.InsertScore(reservationID, email ,theScores, total, handicapDifferential);
             return b;
         }
         catch
@@ -313,10 +316,24 @@ public class ClubBAIST
         }
     }
 
-    public List<Score> ReadScores(int userID)
+    public List<Score> ReadScores(string email)
     {
         ScoreController scores = new ScoreController();
-        List<Score> s = scores.SelectScores(userID);
+        List<Score> s = scores.SelectScores(email);
+        return s;
+    }
+
+    public List<Score> ReadScoresForReservation(int reservationID)
+    {
+        ScoreController scores = new ScoreController();
+        List<Score> s = scores.SelectScoresForReservation(reservationID);
+        return s;
+    }
+
+    public List<Score> ReadAllScores()
+    {
+        ScoreController scores = new ScoreController();
+        List<Score> s = scores.SelectAllScores();
         return s;
     }
     #endregion
@@ -332,6 +349,68 @@ public class ClubBAIST
         else
         {
             return false;
+        }
+    }
+    #endregion
+
+    #region Helper Methods
+    public string MakeHumanFriendlyDate(DateTime d)
+    {
+        string month = "";
+        switch (d.Month)
+        {
+            case 1:
+                month = "January";
+                break;
+            case 2:
+                month = "February";
+                break;
+            case 3:
+                month = "March";
+                break;
+            case 4:
+                month = "April";
+                break;
+            case 5:
+                month = "May";
+                break;
+            case 6:
+                month = "June";
+                break;
+            case 7:
+                month = "July";
+                break;
+            case 8:
+                month = "August";
+                break;
+            case 9:
+                month = "September";
+                break;
+            case 10:
+                month = "October";
+                break;
+            case 11:
+                month = "November";
+                break;
+            case 12:
+                month = "December";
+                break;
+        }
+        return String.Format("{0} {1}, {2}", month, d.Day, d.Year);
+    }
+
+    public string GetHolesReservationDescription(int i)
+    {
+        switch (i)
+        {
+            case 1:
+                return "Front 9";
+            case 2:
+                return "Back 9";
+            case 3:
+                return "18 Holes";
+            default:
+                return "?";
         }
     }
     #endregion

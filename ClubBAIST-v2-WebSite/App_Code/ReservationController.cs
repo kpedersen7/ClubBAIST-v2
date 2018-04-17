@@ -11,12 +11,12 @@ using System.Web;
 /// </summary>
 public class ReservationController
 {
-    public bool InsertReservation(int userID, int courseID, DateTime reservedTime, int numberHoles, int numberCarts, int numberPlayers)
+    public bool InsertReservation(int userID, int courseID, DateTime reservedTime, int numberHoles, int numberCarts, string player2, string player3, string player4, int isStandingReservation)
     {
         try
         {
             SqlConnection ClubBAISTConnection = new SqlConnection();
-            ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAISTLaptop"].ConnectionString;
+            ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAIST"].ConnectionString;
 
             SqlCommand ClubBAISTCommand = new SqlCommand();
             ClubBAISTCommand.CommandType = CommandType.StoredProcedure;
@@ -59,9 +59,30 @@ public class ReservationController
             ClubBAISTCommand.Parameters.Add(parameter);
 
             parameter = new SqlParameter();
-            parameter.ParameterName = "@NumberPlayers";
+            parameter.ParameterName = "@Player2";
+            parameter.SqlDbType = SqlDbType.NChar;
+            parameter.Value = player2;
+            parameter.Direction = ParameterDirection.Input;
+            ClubBAISTCommand.Parameters.Add(parameter);
+
+            parameter = new SqlParameter();
+            parameter.ParameterName = "@Player3";
+            parameter.SqlDbType = SqlDbType.NChar;
+            parameter.Value = player3;
+            parameter.Direction = ParameterDirection.Input;
+            ClubBAISTCommand.Parameters.Add(parameter);
+
+            parameter = new SqlParameter();
+            parameter.ParameterName = "@Player4";
+            parameter.SqlDbType = SqlDbType.NChar;
+            parameter.Value = player4;
+            parameter.Direction = ParameterDirection.Input;
+            ClubBAISTCommand.Parameters.Add(parameter);
+
+            parameter = new SqlParameter();
+            parameter.ParameterName = "@IsStandingReservation";
             parameter.SqlDbType = SqlDbType.Int;
-            parameter.Value = numberPlayers;
+            parameter.Value = isStandingReservation;
             parameter.Direction = ParameterDirection.Input;
             ClubBAISTCommand.Parameters.Add(parameter);
 
@@ -83,7 +104,7 @@ public class ReservationController
         try
         {
             SqlConnection ClubBAISTConnection = new SqlConnection();
-            ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAISTLaptop"].ConnectionString;
+            ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAIST"].ConnectionString;
 
             SqlCommand ClubBAISTCommand = new SqlCommand();
             ClubBAISTCommand.CommandType = CommandType.StoredProcedure;
@@ -109,7 +130,9 @@ public class ReservationController
             theReservation.ReservedTime = DateTime.Parse(dr["ReservedTime"].ToString());
             theReservation.NumberHoles = int.Parse(dr["NumberHoles"].ToString());
             theReservation.NumberCarts = int.Parse(dr["NumberCarts"].ToString());
-            theReservation.NumberPlayers = int.Parse(dr["NumberPlayers"].ToString());
+            theReservation.Player2 = dr["Player2"].ToString();
+            theReservation.Player3 = dr["Player3"].ToString();
+            theReservation.Player4 = dr["Player4"].ToString();
 
             ClubBAISTConnection.Close();
         }
@@ -120,13 +143,13 @@ public class ReservationController
         return theReservation;
     }
 
-    public List<Reservation> SelectReservationBatchForMember(int userID)
+    public List<Reservation> SelectReservationBatchForMember(int userID, string email)
     {
         List<Reservation> usersReservations = new List<Reservation>();
         try
         {
             SqlConnection ClubBAISTConnection = new SqlConnection();
-            ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAISTLaptop"].ConnectionString;
+            ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAIST"].ConnectionString;
 
             SqlCommand ClubBAISTCommand = new SqlCommand();
             ClubBAISTCommand.CommandType = CommandType.StoredProcedure;
@@ -137,6 +160,13 @@ public class ReservationController
             parameter.ParameterName = "@UserID";
             parameter.SqlDbType = SqlDbType.Int;
             parameter.Value = userID;
+            parameter.Direction = ParameterDirection.Input;
+            ClubBAISTCommand.Parameters.Add(parameter);
+
+            parameter = new SqlParameter();
+            parameter.ParameterName = "@UserEmail";
+            parameter.SqlDbType = SqlDbType.NChar;
+            parameter.Value = email;
             parameter.Direction = ParameterDirection.Input;
             ClubBAISTCommand.Parameters.Add(parameter);
 
@@ -152,7 +182,9 @@ public class ReservationController
                 r.ReservedTime = DateTime.Parse(dr["ReservedTime"].ToString());
                 r.NumberHoles = int.Parse(dr["NumberHoles"].ToString());
                 r.NumberCarts = int.Parse(dr["NumberCarts"].ToString());
-                r.NumberPlayers = int.Parse(dr["NumberPlayers"].ToString());
+                r.Player2 = dr["Player2"].ToString();
+                r.Player3 = dr["Player3"].ToString();
+                r.Player4 = dr["Player4"].ToString();
                 usersReservations.Add(r);
             }
             ClubBAISTConnection.Close();
@@ -171,7 +203,7 @@ public class ReservationController
         try
         {
             SqlConnection ClubBAISTConnection = new SqlConnection();
-            ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAISTLaptop"].ConnectionString;
+            ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAIST"].ConnectionString;
 
             SqlCommand ClubBAISTCommand = new SqlCommand();
             ClubBAISTCommand.CommandType = CommandType.StoredProcedure;
@@ -204,7 +236,9 @@ public class ReservationController
                 r.ReservedTime = DateTime.Parse(dr["ReservedTime"].ToString());
                 r.NumberHoles = int.Parse(dr["NumberHoles"].ToString());
                 r.NumberCarts = int.Parse(dr["NumberCarts"].ToString());
-                r.NumberPlayers = int.Parse(dr["NumberPlayers"].ToString());
+                r.Player2 = dr["Player2"].ToString();
+                r.Player3 = dr["Player3"].ToString();
+                r.Player4 = dr["Player4"].ToString();
                 theReservations.Add(r);
             }
             ClubBAISTConnection.Close();
@@ -216,12 +250,12 @@ public class ReservationController
         return theReservations;
     }
 
-    public bool UpdateReservation(int reservationID, int userID, int courseID, DateTime reservedTime, int numberHoles, int numberCarts, int numberPlayers)
+    public bool UpdateReservation(int reservationID, int userID, int courseID, DateTime reservedTime, int numberHoles, int numberCarts, string player2, string player3, string player4)
     {
         try
         {
             SqlConnection ClubBAISTConnection = new SqlConnection();
-            ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAISTLaptop"].ConnectionString;
+            ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAIST"].ConnectionString;
 
             SqlCommand ClubBAISTCommand = new SqlCommand();
             ClubBAISTCommand.CommandType = CommandType.StoredProcedure;
@@ -271,9 +305,23 @@ public class ReservationController
             ClubBAISTCommand.Parameters.Add(parameter);
 
             parameter = new SqlParameter();
-            parameter.ParameterName = "@NumberPlayers";
-            parameter.SqlDbType = SqlDbType.Int;
-            parameter.Value = numberPlayers;
+            parameter.ParameterName = "@Player2";
+            parameter.SqlDbType = SqlDbType.NChar;
+            parameter.Value = player2;
+            parameter.Direction = ParameterDirection.Input;
+            ClubBAISTCommand.Parameters.Add(parameter);
+
+            parameter = new SqlParameter();
+            parameter.ParameterName = "@Player3";
+            parameter.SqlDbType = SqlDbType.NChar;
+            parameter.Value = player3;
+            parameter.Direction = ParameterDirection.Input;
+            ClubBAISTCommand.Parameters.Add(parameter);
+
+            parameter = new SqlParameter();
+            parameter.ParameterName = "@Player4";
+            parameter.SqlDbType = SqlDbType.NChar;
+            parameter.Value = player4;
             parameter.Direction = ParameterDirection.Input;
             ClubBAISTCommand.Parameters.Add(parameter);
 
@@ -294,7 +342,7 @@ public class ReservationController
         try
         {
             SqlConnection ClubBAISTConnection = new SqlConnection();
-            ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAISTLaptop"].ConnectionString;
+            ClubBAISTConnection.ConnectionString = ConfigurationManager.ConnectionStrings["ClubBAIST"].ConnectionString;
 
             SqlCommand ClubBAISTCommand = new SqlCommand();
             ClubBAISTCommand.CommandType = CommandType.StoredProcedure;

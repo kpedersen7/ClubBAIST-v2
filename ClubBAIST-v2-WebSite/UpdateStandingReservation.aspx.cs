@@ -33,6 +33,7 @@ public partial class UpdateStandingReservation : System.Web.UI.Page
 
     private void FillForm()
     {
+        //this page will break
         ClubBAIST cb = new ClubBAIST();
         StandingReservation sr = cb.ReadStandingReservation(int.Parse(Request.QueryString["sr"]));
         Calendar.SelectedDate = sr.ReservedTime.Date;
